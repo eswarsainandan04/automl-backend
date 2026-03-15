@@ -1,0 +1,408 @@
+{
+    "file_name": "sample.csv",
+    "number_of_rows": 2,
+    "number_of_columns": 12,
+    "column_wise_summary": [
+        {
+            "column_name": "fixed acidity",
+            "inferred_dtype": "float",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                "7.4",
+                "7.8"
+            ],
+            "semantic_type": "float",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "volatile acidity",
+            "inferred_dtype": "float",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                "0.7",
+                "0.88"
+            ],
+            "semantic_type": "float",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "citric acid",
+            "inferred_dtype": "integer",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 1,
+            "sample_values": [
+                0,
+                0
+            ],
+            "semantic_type": "integer",
+            "semantic_confidence": 1.0,
+            "structural_type": "boolean"
+        },
+        {
+            "column_name": "residual sugar",
+            "inferred_dtype": "float",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                "1.9",
+                "2.6"
+            ],
+            "semantic_type": "float",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "chlorides",
+            "inferred_dtype": "float",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                "0.08",
+                "0.1"
+            ],
+            "semantic_type": "float",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "free sulfur dioxide",
+            "inferred_dtype": "integer",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                11,
+                25
+            ],
+            "semantic_type": "integer",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "total sulfur dioxide",
+            "inferred_dtype": "integer",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                34,
+                67
+            ],
+            "semantic_type": "integer",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "density",
+            "inferred_dtype": "float",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                "1.0",
+                "1.0"
+            ],
+            "semantic_type": "float",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "pH",
+            "inferred_dtype": "float",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                "3.51",
+                "3.2"
+            ],
+            "semantic_type": "float",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "sulphates",
+            "inferred_dtype": "float",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                "0.56",
+                "0.68"
+            ],
+            "semantic_type": "float",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "alcohol",
+            "inferred_dtype": "float",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 2,
+            "sample_values": [
+                "9.4",
+                "9.8"
+            ],
+            "semantic_type": "float",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "quality",
+            "inferred_dtype": "integer",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 1,
+            "sample_values": [
+                5,
+                5
+            ],
+            "semantic_type": "integer",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        }
+    ],
+    "dataset_level_flags": {
+        "has_missing_values": false,
+        "has_duplicates": false,
+        "has_mixed_types": false,
+        "has_potential_id_columns": true,
+        "potential_id_columns": [
+            "fixed acidity",
+            "volatile acidity",
+            "residual sugar",
+            "chlorides",
+            "free sulfur dioxide",
+            "total sulfur dioxide",
+            "density",
+            "pH",
+            "sulphates",
+            "alcohol"
+        ]
+    },
+    "transformation_summary": {
+        "duplicates_removed": 0,
+        "columns_transformed": 12,
+        "columns_skipped": 0,
+        "columns_dropped": 0,
+        "transformed_column_list": [
+            "fixed acidity",
+            "volatile acidity",
+            "citric acid",
+            "residual sugar",
+            "chlorides",
+            "free sulfur dioxide",
+            "total sulfur dioxide",
+            "density",
+            "pH",
+            "sulphates",
+            "alcohol",
+            "quality"
+        ],
+        "skipped_column_list": [],
+        "dropped_column_list": [],
+        "transformation_date": "2026-03-06 21:19:52"
+    },
+    "encoding_summary": {
+        "encoding_date": "2026-03-06 21:20:30",
+        "original_column_count": 12,
+        "final_column_count": 12,
+        "columns_dropped": 0,
+        "columns_encoded": 12,
+        "encoding_methods_used": [
+            "BooleanCast",
+            "NumericPassThrough"
+        ],
+        "column_wise_encoding": {
+            "fixed acidity": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "volatile acidity": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "residual sugar": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "chlorides": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "free sulfur dioxide": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "total sulfur dioxide": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "density": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "pH": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "sulphates": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "alcohol": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "quality": {
+                "method": "NumericPassThrough",
+                "scaled": false
+            },
+            "citric acid": {
+                "method": "BooleanCast",
+                "reason": "structural_type = boolean Ã¢â€ â€™ int 0/1"
+            }
+        }
+    },
+    "scaling_summary": {
+        "scaling_version": "3.0.0",
+        "scaling_date": "2026-03-06 21:43:50",
+        "total_columns_scaled": 7,
+        "scaled_columns": [
+            "fixed acidity",
+            "residual sugar",
+            "free sulfur dioxide",
+            "total sulfur dioxide",
+            "pH",
+            "alcohol",
+            "quality"
+        ],
+        "methods_used": [
+            "minmax",
+            "skipped_already_scaled"
+        ],
+        "column_wise_scaling": {
+            "fixed acidity": {
+                "method": "minmax",
+                "profile": {
+                    "mean": 7.6,
+                    "std": 0.2828427124746186,
+                    "min": 7.4,
+                    "max": 7.8,
+                    "skew": 0.0,
+                    "kurtosis": 0.0,
+                    "iqr": 0.20000000000000018
+                }
+            },
+            "volatile acidity": {
+                "method": "skipped_already_scaled"
+            },
+            "citric acid": {
+                "method": "skipped_already_scaled"
+            },
+            "residual sugar": {
+                "method": "minmax",
+                "profile": {
+                    "mean": 2.25,
+                    "std": 0.4949747468305834,
+                    "min": 1.9,
+                    "max": 2.6,
+                    "skew": 0.0,
+                    "kurtosis": 0.0,
+                    "iqr": 0.34999999999999964
+                }
+            },
+            "chlorides": {
+                "method": "skipped_already_scaled"
+            },
+            "free sulfur dioxide": {
+                "method": "minmax",
+                "profile": {
+                    "mean": 18.0,
+                    "std": 9.899494936611665,
+                    "min": 11.0,
+                    "max": 25.0,
+                    "skew": 0.0,
+                    "kurtosis": 0.0,
+                    "iqr": 7.0
+                }
+            },
+            "total sulfur dioxide": {
+                "method": "minmax",
+                "profile": {
+                    "mean": 50.5,
+                    "std": 23.33452377915607,
+                    "min": 34.0,
+                    "max": 67.0,
+                    "skew": 0.0,
+                    "kurtosis": 0.0,
+                    "iqr": 16.5
+                }
+            },
+            "density": {
+                "method": "skipped_already_scaled"
+            },
+            "pH": {
+                "method": "minmax",
+                "profile": {
+                    "mean": 3.355,
+                    "std": 0.21920310216782946,
+                    "min": 3.2,
+                    "max": 3.51,
+                    "skew": 0.0,
+                    "kurtosis": 0.0,
+                    "iqr": 0.15500000000000025
+                }
+            },
+            "sulphates": {
+                "method": "skipped_already_scaled"
+            },
+            "alcohol": {
+                "method": "minmax",
+                "profile": {
+                    "mean": 9.600000000000001,
+                    "std": 0.2828427124746193,
+                    "min": 9.4,
+                    "max": 9.8,
+                    "skew": 0.0,
+                    "kurtosis": 0.0,
+                    "iqr": 0.20000000000000107
+                }
+            },
+            "quality": {
+                "method": "minmax",
+                "profile": {
+                    "mean": 5.0,
+                    "std": 0.0,
+                    "min": 5.0,
+                    "max": 5.0,
+                    "skew": 0.0,
+                    "kurtosis": 0.0,
+                    "iqr": 0.0
+                }
+            }
+        }
+    },
+    "feature_selection_summary": {
+        "applied": false,
+        "version": "2.0.0",
+        "target_column_used": "fixed acidity",
+        "original_feature_count": 9,
+        "selected_feature_count": 9,
+        "columns_removed": 0,
+        "strategies_applied": [],
+        "strategy_details": [],
+        "skipped_reason": "feature_selection_skipped_small_dataset",
+        "timestamp": "2026-03-06T21:44:33"
+    }
+}
