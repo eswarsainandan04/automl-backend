@@ -20,10 +20,9 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Any, Tuple, Optional
 from io import BytesIO
-try:
-    from .supabase_storage import download_file, upload_file, download_json, upload_json, list_files
-except ImportError:
-    from supabase_storage import download_file, upload_file, download_json, upload_json, list_files
+
+# Get storage root directory
+STORAGE_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'storage')
 
 # Import pattern classes
 try:
@@ -823,7 +822,7 @@ def detect_and_normalize_column(column: pd.Series, patterns: Dict) -> Tuple[pd.S
 # MAIN PROCESSING FUNCTION
 # ==============================
 
-def process_varchar_columns(userid: str, sessionid: str, filename: str):
+def process_varchar_columns(userid: str, filename: str):
     """
     Main function to process varchar columns for a dataset.
     
@@ -841,31 +840,30 @@ def process_varchar_columns(userid: str, sessionid: str, filename: str):
     
     Args:
         userid: User ID
-        sessionid: Session ID
         filename: Dataset filename (without _cleaned.csv suffix)
     """
     print(f"\n{'='*80}")
-    print(f"COLUMN TYPE RESOLVER - Processing: {userid}/{sessionid}/{filename}")
+    print(f"COLUMN TYPE RESOLVER - Processing: {userid}/{filename}")
     print(f"{'='*80}\n")
     
     # Load cleaned dataset
-    dataset_storage_path = f"output/{userid}/{sessionid}/{filename}_cleaned.csv"
-    print(f"[1/7] Loading cleaned dataset: {dataset_storage_path}")
+    dataset_path = os.path.join(STORAGE_ROOT, f"output/{userid}/{filename}_cleaned.csv")
+    print(f"[1/7] Loading cleaned dataset: output/{userid}/{filename}_cleaned.csv")
     
     try:
-        content = download_file(dataset_storage_path)
-        df = pd.read_csv(BytesIO(content))
+        df = pd.read_csv(dataset_path)
         print(f"      Loaded {len(df)} rows, {len(df.columns)} columns")
     except Exception as e:
         print(f"      ERROR: Failed to load dataset: {e}")
         return
     
     # Load profiling metadata
-    metadata_storage_path = f"meta_data/{userid}/{sessionid}/{filename}_profiling.json"
-    print(f"\n[2/7] Loading profiling metadata: {metadata_storage_path}")
+    metadata_path = os.path.join(STORAGE_ROOT, f"meta_data/{userid}/{filename}_profiling.json")
+    print(f"\n[2/7] Loading profiling metadata: meta_data/{userid}/{filename}_profiling.json")
     
     try:
-        metadata = download_json(metadata_storage_path)
+        with open(metadata_path, 'r', encoding='utf-8') as f:
+            metadata = json.load(f)
         print(f"      Loaded metadata with {len(metadata.get('column_wise_summary', []))} column summaries")
     except Exception as e:
         print(f"      ERROR: Failed to load metadata: {e}")
@@ -1112,14 +1110,14 @@ def process_varchar_columns(userid: str, sessionid: str, filename: str):
     print(f"\n[6/7] Saving updated dataset...")
     
     try:
-        # Save CSV to Supabase
-        content = df.to_csv(index=False, encoding='utf-8').encode('utf-8')
-        upload_file(dataset_storage_path, content, "text/csv")
-        print(f"      ✓ Saved dataset: {dataset_storage_path}")
+        # Save CSV
+        df.to_csv(dataset_path, index=False, encoding='utf-8')
+        print(f"      ✓ Saved dataset: output/{userid}/{filename}_cleaned.csv")
         
-        # Save metadata to Supabase
-        upload_json(metadata_storage_path, metadata)
-        print(f"      ✓ Saved metadata: {metadata_storage_path}")
+        # Save metadata
+        with open(metadata_path, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, indent=4, ensure_ascii=False)
+        print(f"      ✓ Saved metadata: meta_data/{userid}/{filename}_profiling.json")
         
     except Exception as e:
         print(f"      ERROR: Failed to save: {e}")
@@ -1142,111 +1140,74 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description="Column Type Resolver")
     parser.add_argument("--userid", type=str, help="User ID", required=False)
-    parser.add_argument("--sessionid", type=str, help="Session ID", required=False)
     parser.add_argument("--filename", type=str, help="Dataset filename (without _cleaned.csv)", required=False)
+    parser.add_argument("--all", action="store_true", help="Process all users")
     
     args = parser.parse_args()
     
-    # Get userid (from args or prompt)
-    userid = args.userid
-    if not userid:
-        userid = input("Enter User ID: ").strip()
-        if not userid:
-            print("Error: User ID is required")
-            exit(1)
-    
-    # Get sessionid (from args or prompt)
-    sessionid = args.sessionid
-    if not sessionid:
-        sessionid = input("Enter Session ID: ").strip()
-        if not sessionid:
-            print("Error: Session ID is required")
-            exit(1)
-    
-    if args.filename:
-        # Process single dataset
-        process_varchar_columns(userid, sessionid, args.filename)
-    else:
-        # Process all datasets for this user/session
-        folder_prefix = f"output/{userid}/{sessionid}"
+    if args.all:
+        # Process all users and all their datasets
+        output_dir = os.path.join(STORAGE_ROOT, "output")
         
-        try:
-            all_files = list_files(folder_prefix)
-            cleaned_files = [f for f in all_files if f.endswith('_cleaned.csv')]
+        if not os.path.exists(output_dir):
+            print("No output directory found")
+            exit(1)
+        
+        users = [d for d in os.listdir(output_dir) if os.path.isdir(os.path.join(output_dir, d))]
+        
+        for userid in users:
+            # Get all cleaned datasets for this user
+            try:
+                user_output_dir = os.path.join(output_dir, userid)
+                files = [f for f in os.listdir(user_output_dir) if os.path.isfile(os.path.join(user_output_dir, f))]
+                cleaned_files = [f for f in files if f.endswith('_cleaned.csv')]
+                
+                for cleaned_file in cleaned_files:
+                    filename = cleaned_file.replace('_cleaned.csv', '')
+                    process_varchar_columns(userid, filename)
+            except Exception as e:
+                print(f"Error processing user {userid}: {e}")
+                continue
+    
+    else:
+        # Get userid (from args or prompt)
+        userid = args.userid
+        if not userid:
+            userid = input("Enter User ID: ").strip()
+            if not userid:
+                print("Error: User ID is required")
+                exit(1)
+        
+        # If filename is provided, process only that dataset
+        # If filename is not provided, process all datasets for the user
+        if args.filename:
+            # Process single dataset
+            process_varchar_columns(userid, args.filename)
+        else:
+            # Process all datasets for this user
+            user_output_dir = os.path.join(STORAGE_ROOT, f"output/{userid}")
             
-            if not cleaned_files:
-                print(f"No datasets found for user {userid}, session {sessionid}")
+            if not os.path.exists(user_output_dir):
+                print(f"No datasets found for user {userid}")
                 exit(1)
             
-            print(f"\nProcessing all datasets for user {userid}, session {sessionid}:")
-            print(f"Found {len(cleaned_files)} dataset(s)\n")
-            
-            for cleaned_file in cleaned_files:
-                filename = cleaned_file.replace('_cleaned.csv', '')
-                process_varchar_columns(userid, sessionid, filename)
-                print()  # Blank line between datasets
+            try:
+                files = [f for f in os.listdir(user_output_dir) if os.path.isfile(os.path.join(user_output_dir, f))]
+                cleaned_files = [f for f in files if f.endswith('_cleaned.csv')]
                 
-        except Exception as e:
-            print(f"Error listing files: {e}")
-            exit(1)
-
-
-# ==============================
-# PIPELINE API — matches other preprocessing modules
-# ==============================
-
-def process_user_datasets(userid: str, sessionid: str):
-    """
-    Process all cleaned datasets for a user session.
-    Loops over every *_cleaned.csv in output/{userid}/{sessionid}/ and
-    runs process_varchar_columns on each one.
-
-    Args:
-        userid: User ID
-        sessionid: Session ID
-    """
-    print("=" * 70)
-    print("COLUMN TYPE RESOLVER - AutoML Preprocessing System")
-    print("=" * 70)
-    print(f"User ID:    {userid}")
-    print(f"Session ID: {sessionid}")
-    print()
-
-    folder_prefix = f"output/{userid}/{sessionid}"
-    print(f" Searching for datasets in: {folder_prefix}")
-
-    try:
-        all_files = list_files(folder_prefix)
-    except Exception as e:
-        print(f"  Error listing files: {e}")
-        return
-
-    cleaned_files = [f for f in all_files if f.endswith('_cleaned.csv')]
-
-    if not cleaned_files:
-        print(f"  No cleaned datasets found for user: {userid}, session: {sessionid}")
-        return
-
-    print(f" Found {len(cleaned_files)} dataset(s)")
-
-    success_count = 0
-    error_count = 0
-
-    for cleaned_file in cleaned_files:
-        filename = cleaned_file.replace('_cleaned.csv', '')
-        try:
-            process_varchar_columns(userid, sessionid, filename)
-            success_count += 1
-        except Exception as e:
-            error_count += 1
-            print(f"\n  Error processing {cleaned_file}: {e}")
-
-    print("\n" + "=" * 70)
-    print(" PROCESSING SUMMARY")
-    print("=" * 70)
-    print(f" Successfully processed: {success_count} dataset(s)")
-    if error_count > 0:
-        print(f" Errors encountered:     {error_count} dataset(s)")
-    print()
-    print(" Column type resolution completed!")
-    print("=" * 70)
+                if not cleaned_files:
+                    print(f"No datasets found for user {userid}")
+                    exit(1)
+                
+                print(f"\nProcessing all datasets for user {userid}:")
+                print(f"Found {len(cleaned_files)} dataset(s)\n")
+                
+                for cleaned_file in cleaned_files:
+                    filename = cleaned_file.replace('_cleaned.csv', '')
+                    process_varchar_columns(userid, filename)
+                    print()  # Blank line between datasets
+                    
+            except Exception as e:
+                print(f"Error processing user {userid}: {e}")
+                exit(1)
+        print("  Process all datasets:   python ColumnTypeResolver.py --all")
