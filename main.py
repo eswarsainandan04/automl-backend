@@ -38,6 +38,18 @@ def _safe_frontend_error_message(path: str, status_code: int) -> str | None:
 
     return None
 
+
+def _cors_error_headers(request: Request) -> dict[str, str]:
+    """Ensure browser clients can read sanitized error payloads."""
+    origin = request.headers.get("origin")
+    if not origin:
+        return {}
+    return {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Credentials": "true",
+        "Vary": "Origin",
+    }
+
 # CORS must be added BEFORE routers
 app.add_middleware(
     CORSMiddleware,
@@ -68,9 +80,17 @@ async def sanitized_http_exception_handler(request: Request, exc: FastAPIHTTPExc
             exc.status_code,
             exc.detail,
         )
-        return JSONResponse(status_code=exc.status_code, content={"detail": safe_message})
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": safe_message},
+            headers=_cors_error_headers(request),
+        )
 
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=_cors_error_headers(request),
+    )
 
 
 @app.exception_handler(Exception)
@@ -80,6 +100,7 @@ async def sanitized_unhandled_exception_handler(request: Request, exc: Exception
     return JSONResponse(
         status_code=500,
         content={"detail": safe_message or "Sorry, something went wrong. Please try again."},
+        headers=_cors_error_headers(request),
     )
 
 @app.on_event("startup")
