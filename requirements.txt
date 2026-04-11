@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 boto3
+botocore
 python-dotenv
 mysql-connector-python
 pymssql
@@ -22,3 +23,5 @@ flask
 xgboost
 lightgbm
 catboost
+joblib
+optuna
