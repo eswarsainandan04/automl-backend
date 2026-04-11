@@ -26,33 +26,33 @@ def login(data: LoginRequest):
             detail="Password exceeds bcrypt limit (72 bytes).",
         )
 
-    conn = psycopg2.connect(
+    with psycopg2.connect(
         host=POSTGRES_HOST,
         port=POSTGRES_PORT,
         database=POSTGRES_DB,
         user=POSTGRES_USER,
-        password=POSTGRES_PASSWORD
-    )
-
-    cur = conn.cursor()
-
-    cur.execute(
-        "SELECT id, fullname, password FROM users WHERE email=%s",
-        (email,)
-    )
-
-    user = cur.fetchone()
+        password=POSTGRES_PASSWORD,
+    ) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, fullname, password FROM users WHERE email=%s",
+                (email,),
+            )
+            user = cur.fetchone()
 
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
-    if not pwd.verify(password, user[2]):
+    try:
+        password_ok = pwd.verify(password, user[2])
+    except Exception:
+        # Treat malformed/legacy hash formats as invalid credentials.
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+    if not password_ok:
         raise HTTPException(status_code=401, detail="Invalid password")
 
     token = create_token(email, user_id=str(user[0]))
-
-    cur.close()
-    conn.close()
 
     return {"access_token": token, "user_id": str(user[0]), "fullname": user[1], "email": email}
 
