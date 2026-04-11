@@ -1,8 +1,10 @@
-FROM python:3.10-slim
+# AutoGluon currently does not support Python 3.14; keep image on 3.10.
+FROM python:3.10.14-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
 	PYTHONUNBUFFERED=1 \
 	PIP_NO_CACHE_DIR=1 \
+	PIP_PREFER_BINARY=1 \
 	PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
