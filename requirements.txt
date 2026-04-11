@@ -10,7 +10,7 @@ pandas
 numpy
 scikit-learn
 category_encoders
-autogluon
+autogluon.tabular
 scipy
 python-jose[cryptography]
 pydantic
