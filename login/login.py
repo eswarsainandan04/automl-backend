@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
+import ast
+import bcrypt
 import psycopg2
-from passlib.context import CryptContext
 from jose import JWTError
 from jose import jwt as jose_jwt
 from config import *
@@ -10,15 +11,32 @@ from jwt_handler import ALGORITHM, SECRET_KEY, create_token
 
 router = APIRouter(prefix="/login", tags=["Login"])
 
-pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 class LoginRequest(BaseModel):
     email: str
     password: str
 
+
+def _stored_hash_to_bytes(stored_password: str | bytes) -> bytes:
+    if isinstance(stored_password, bytes):
+        return stored_password
+
+    raw = str(stored_password).strip()
+    if raw.startswith(("b'", 'b"')):
+        try:
+            parsed = ast.literal_eval(raw)
+            if isinstance(parsed, bytes):
+                return parsed
+        except (ValueError, SyntaxError):
+            pass
+    return raw.encode("utf-8")
+
 @router.post("/")
 def login(data: LoginRequest):
-    email, password = data.email, data.password
+    email = data.email.strip().lower()
+    password = data.password
+
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Email and password are required")
 
     if len(password.encode("utf-8")) > 72:
         raise HTTPException(
@@ -44,8 +62,11 @@ def login(data: LoginRequest):
         raise HTTPException(status_code=401, detail="User not found")
 
     try:
-        password_ok = pwd.verify(password, user[2])
-    except Exception:
+        password_ok = bcrypt.checkpw(
+            password.encode("utf-8"),
+            _stored_hash_to_bytes(user[2]),
+        )
+    except (TypeError, ValueError):
         # Treat malformed/legacy hash formats as invalid credentials.
         raise HTTPException(status_code=401, detail="Invalid password")
 
