@@ -1,20 +1,23 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+import bcrypt
 import psycopg2
+from psycopg2 import errorcodes
 import uuid
-from passlib.context import CryptContext
 from config import *
 from jwt_handler import create_token
 
 router = APIRouter(prefix="/signup", tags=["Signup"])
-
-pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class SignupRequest(BaseModel):
     fullname: str
     email: str
     password: str
     confirm_password: str
+
+
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 @router.post("/")
 def signup(data: SignupRequest):
@@ -47,30 +50,27 @@ def signup(data: SignupRequest):
             detail="Password exceeds bcrypt limit (72 bytes).",
         )
 
-    conn = psycopg2.connect(
+    hashed = _hash_password(password)
+    new_id = str(uuid.uuid4())
+
+    try:
+        with psycopg2.connect(
         host=POSTGRES_HOST,
         port=POSTGRES_PORT,
         database=POSTGRES_DB,
         user=POSTGRES_USER,
         password=POSTGRES_PASSWORD
-    )
-
-    cur = conn.cursor()
-
-    hashed = pwd.hash(password)
-
-    new_id = str(uuid.uuid4())
-    try:
-        cur.execute(
-            "INSERT INTO users(id, fullname, email, password) VALUES(%s,%s,%s,%s)",
-            (new_id, fullname, email, hashed)
-        )
-        conn.commit()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Email already exists")
-
-    cur.close()
-    conn.close()
+        ) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO users(id, fullname, email, password) VALUES(%s,%s,%s,%s)",
+                    (new_id, fullname, email, hashed)
+                )
+            conn.commit()
+    except psycopg2.IntegrityError as exc:
+        if exc.pgcode == errorcodes.UNIQUE_VIOLATION:
+            raise HTTPException(status_code=400, detail="Email already exists")
+        raise HTTPException(status_code=400, detail="Unable to create account")
 
     token = create_token(email)
 
