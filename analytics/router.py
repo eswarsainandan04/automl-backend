@@ -11,6 +11,7 @@ GET /analytics/run/{session_id}
 """
 
 import io
+import logging
 import os
 import sys
 from typing import Optional
@@ -47,6 +48,7 @@ from decision_maker import (
 
 router   = APIRouter(prefix="/analytics", tags=["Analytics"])
 security = HTTPBearer()
+logger   = logging.getLogger(__name__)
 
 
 # ── Auth helpers ───────────────────────────────────────────────────────────────
@@ -148,7 +150,14 @@ def _compute_box_stats(groups: dict) -> dict:
     return stats
 
 
-def _run_chart_pipeline(df: pd.DataFrame, profiling: dict, client, model_name: str) -> list:
+def _run_chart_pipeline(
+    df: pd.DataFrame,
+    profiling: dict,
+    client,
+    model_name: str,
+    llm_warnings: Optional[list] = None,
+    dataset_name: str = "",
+) -> list:
     """
     Run the full chart-planning pipeline on one DataFrame.
     Returns a list of Chart.js-ready chart dicts.
@@ -157,12 +166,18 @@ def _run_chart_pipeline(df: pd.DataFrame, profiling: dict, client, model_name: s
     if not column_data:
         return []
 
+    dataset_label = dataset_name or profiling.get("file_name", "dataset")
+
     try:
         raw  = ask_llm_for_chart_plan(column_data, profiling, client, model_name)
         plan = parse_llm_response(raw)
         llm_charts = plan.get("charts", [])
-    except Exception:
+    except Exception as exc:
         llm_charts = []
+        warning = f"[{dataset_label}] LLM chart planning failed, using Python fallback only: {exc}"
+        logger.warning(warning)
+        if llm_warnings is not None:
+            llm_warnings.append(warning)
 
     extra      = ensure_default_charts(llm_charts, df, column_data)
     all_charts = llm_charts + extra
@@ -290,6 +305,7 @@ def run_analytics(
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured on server")
 
     client = genai.Client(api_key=api_key)
+    llm_warnings = []
 
     # ── 1. Discover + load all datasets ──────────────────────────────────────
     try:
@@ -348,13 +364,23 @@ def run_analytics(
                 raw_join_resp = ask_llm_for_join_plan(datasets_with_fk, client, model_name)
                 join_plan     = parse_llm_response(raw_join_resp)
                 join_results  = execute_join_plan(join_plan, named_dfs)
-            except Exception:
+            except Exception as exc:
+                warning = f"[join_planning] LLM join planning failed, skipping joined datasets: {exc}"
+                logger.warning(warning)
+                llm_warnings.append(warning)
                 join_results = []
 
     # ── 4. Run chart pipeline on individual datasets ──────────────────────────
     individual_results = []
     for d in raw_datasets:
-        charts = _run_chart_pipeline(d["df"], d["profiling"], client, model_name)
+        charts = _run_chart_pipeline(
+            d["df"],
+            d["profiling"],
+            client,
+            model_name,
+            llm_warnings=llm_warnings,
+            dataset_name=d["filename"],
+        )
         individual_results.append({
             "filename":     d["filename"],
             "is_joined":    False,
@@ -368,7 +394,14 @@ def run_analytics(
     for jr in join_results:
         joined_df   = jr["df"]
         profiling_j = _make_joined_profiling(joined_df, jr["result_name"])
-        charts      = _run_chart_pipeline(joined_df, profiling_j, client, model_name)
+        charts      = _run_chart_pipeline(
+            joined_df,
+            profiling_j,
+            client,
+            model_name,
+            llm_warnings=llm_warnings,
+            dataset_name=jr["result_name"],
+        )
         joined_results.append({
             "filename":     jr["result_name"],
             "is_joined":    True,
@@ -380,6 +413,11 @@ def run_analytics(
     return {
         "session_id":   session_id,
         "foreign_keys": sorted(foreign_keys),
+        "llm": {
+            "model": model_name,
+            "warning_count": len(llm_warnings),
+            "warnings": llm_warnings,
+        },
         "datasets":     individual_results + joined_results,
     }
 
@@ -400,7 +438,10 @@ def generate_dashboards(
     from dotenv import load_dotenv
     from google import genai
 
-    load_dotenv(os.path.join(_ANALYTICS_DIR, ".env"))
+    backend_env = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+    analytics_env = os.path.join(_ANALYTICS_DIR, ".env")
+    load_dotenv(backend_env)
+    load_dotenv(analytics_env)
 
     api_key    = os.getenv("GEMINI_API_KEY")
     model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
@@ -409,6 +450,7 @@ def generate_dashboards(
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured on server")
 
     client = genai.Client(api_key=api_key)
+    llm_warnings = []
 
     # ── 1. Discover + load all datasets ──────────────────────────────────────
     try:
@@ -465,7 +507,10 @@ def generate_dashboards(
                 raw_join_resp = ask_llm_for_join_plan(datasets_with_fk, client, model_name)
                 join_plan     = parse_llm_response(raw_join_resp)
                 join_results  = execute_join_plan(join_plan, named_dfs)
-            except Exception:
+            except Exception as exc:
+                warning = f"[join_planning] LLM join planning failed, skipping joined datasets: {exc}"
+                logger.warning(warning)
+                llm_warnings.append(warning)
                 join_results = []
 
     # ── 4. Run chart pipeline on each dataset, save JSON, collect results ──────
@@ -491,7 +536,14 @@ def generate_dashboards(
             pass
 
     for d in raw_datasets:
-        charts = _run_chart_pipeline(d["df"], d["profiling"], client, model_name)
+        charts = _run_chart_pipeline(
+            d["df"],
+            d["profiling"],
+            client,
+            model_name,
+            llm_warnings=llm_warnings,
+            dataset_name=d["filename"],
+        )
         _save_dashboard(d["filename"], charts, is_joined=False)
         individual_results.append({
             "filename":     d["filename"],
@@ -504,7 +556,14 @@ def generate_dashboards(
     for jr in join_results:
         joined_df   = jr["df"]
         profiling_j = _make_joined_profiling(joined_df, jr["result_name"])
-        charts      = _run_chart_pipeline(joined_df, profiling_j, client, model_name)
+        charts      = _run_chart_pipeline(
+            joined_df,
+            profiling_j,
+            client,
+            model_name,
+            llm_warnings=llm_warnings,
+            dataset_name=jr["result_name"],
+        )
         _save_dashboard(jr["result_name"], charts, is_joined=True, description=jr["description"])
         joined_results_out.append({
             "filename":     jr["result_name"],
@@ -517,6 +576,11 @@ def generate_dashboards(
     return {
         "session_id":   session_id,
         "foreign_keys": sorted(foreign_keys),
+        "llm": {
+            "model": model_name,
+            "warning_count": len(llm_warnings),
+            "warnings": llm_warnings,
+        },
         "datasets":     individual_results + joined_results_out,
     }
 
