@@ -14,6 +14,72 @@ load_dotenv(analytics_env)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+def _model_candidates(primary_model: str) -> list:
+    """
+    Build an ordered list of Gemini models to try.
+
+    Order:
+      1) Requested model from env/code.
+      2) Optional comma-separated GEMINI_FALLBACK_MODELS env var.
+      3) A broadly available default fallback.
+    """
+    configured = [m.strip() for m in os.getenv("GEMINI_FALLBACK_MODELS", "").split(",") if m.strip()]
+    candidates = [primary_model] + configured + ["gemini-2.0-flash"]
+
+    # Preserve order while removing duplicates.
+    deduped = []
+    seen = set()
+    for model in candidates:
+        if model in seen:
+            continue
+        seen.add(model)
+        deduped.append(model)
+    return deduped
+
+
+def _is_model_access_error(exc: Exception) -> bool:
+    """Return True for model-level access errors where fallback is sensible."""
+    msg = str(exc).lower()
+    return (
+        "403" in msg
+        or "forbidden" in msg
+        or "permission" in msg
+        or "404" in msg
+        or "not found" in msg
+    )
+
+
+def _generate_with_model_fallback(client, model_name: str, prompt: str) -> str:
+    """
+    Try the configured Gemini model and, on model-access failures,
+    retry with fallback models.
+    """
+    attempts = []
+    candidates = _model_candidates(model_name)
+
+    for idx, candidate in enumerate(candidates):
+        try:
+            response = client.models.generate_content(model=candidate, contents=prompt)
+            if idx > 0:
+                print(
+                    f"      INFO: Primary Gemini model '{model_name}' unavailable; "
+                    f"using fallback model '{candidate}'."
+                )
+            return response.text
+        except Exception as exc:
+            attempts.append((candidate, str(exc)))
+            is_last = idx == len(candidates) - 1
+            if is_last or not _is_model_access_error(exc):
+                attempted_models = ", ".join(m for m, _ in attempts)
+                raise RuntimeError(
+                    "Gemini generate_content failed after model retries. "
+                    f"attempted_models=[{attempted_models}] last_error={attempts[-1][1]}"
+                ) from exc
+
+    # Unreachable, but keeps static analyzers happy.
+    raise RuntimeError("Gemini generate_content failed with no model candidates.")
+
+
 # ─────────────────────────────────────────────
 # 1.  File discovery
 # ─────────────────────────────────────────────
@@ -179,8 +245,7 @@ Return ONLY a valid JSON object — NO markdown fences, NO extra text:
 
 Allowed types: bar, pie, line, histogram, scatter, box"""
 
-    response = client.models.generate_content(model=model_name, contents=prompt)
-    return response.text
+    return _generate_with_model_fallback(client, model_name, prompt)
 
 
 def parse_llm_response(text):
@@ -512,8 +577,7 @@ Return ONLY a valid JSON object — NO markdown fences, NO extra text:
 
 If no meaningful join is possible, return: {{"joins": []}}"""
 
-    response = client.models.generate_content(model=model_name, contents=prompt)
-    return response.text
+    return _generate_with_model_fallback(client, model_name, prompt)
 
 
 def execute_join_plan(join_plan: dict, named_dfs: dict) -> list:
