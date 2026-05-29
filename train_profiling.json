@@ -1,0 +1,377 @@
+{
+    "file_name": "train.csv",
+    "number_of_rows": 9800,
+    "number_of_columns": 18,
+    "column_wise_summary": [
+        {
+            "column_name": "Row ID",
+            "inferred_dtype": "integer",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 9800,
+            "sample_values": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "semantic_type": "integer",
+            "semantic_confidence": 1.0,
+            "structural_type": "identifier"
+        },
+        {
+            "column_name": "Order ID",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 4922,
+            "sample_values": [
+                "CA-2017-152156",
+                "CA-2017-152156",
+                "CA-2017-138688",
+                "US-2016-108966",
+                "US-2016-108966"
+            ],
+            "semantic_type": "varchar",
+            "semantic_confidence": 0.0,
+            "semantic_notes": "No semantic pattern matched (best: text 20%), using basic type",
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Order Date",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 1230,
+            "sample_values": [
+                "2017-11-08",
+                "2017-11-08",
+                "2017-06-12",
+                "2016-10-11",
+                "2016-10-11"
+            ],
+            "semantic_type": "date",
+            "semantic_confidence": 1.0,
+            "structural_type": "date"
+        },
+        {
+            "column_name": "Ship Date",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 1326,
+            "sample_values": [
+                "2017-11-11",
+                "2017-11-11",
+                "2017-06-16",
+                "2016-10-18",
+                "2016-10-18"
+            ],
+            "semantic_type": "date",
+            "semantic_confidence": 1.0,
+            "structural_type": "date"
+        },
+        {
+            "column_name": "Ship Mode",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 4,
+            "sample_values": [
+                "Second Class",
+                "Second Class",
+                "Second Class",
+                "Standard Class",
+                "Standard Class"
+            ],
+            "semantic_type": "varchar",
+            "semantic_confidence": 0.0,
+            "semantic_notes": "No semantic pattern matched (best: text 30%), using basic type",
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Customer ID",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 793,
+            "sample_values": [
+                "CG-12520",
+                "CG-12520",
+                "DV-13045",
+                "SO-20335",
+                "SO-20335"
+            ],
+            "semantic_type": "varchar",
+            "semantic_confidence": 0.0,
+            "semantic_notes": "No semantic pattern matched (best: text 20%), using basic type",
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Customer Name",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 793,
+            "sample_values": [
+                "Claire Gute",
+                "Claire Gute",
+                "Darrin Van Huff",
+                "Sean ODonnell",
+                "Sean ODonnell"
+            ],
+            "semantic_type": "text",
+            "semantic_confidence": 0.86,
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Segment",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 3,
+            "sample_values": [
+                "Consumer",
+                "Consumer",
+                "Corporate",
+                "Consumer",
+                "Consumer"
+            ],
+            "semantic_type": "text",
+            "semantic_confidence": 1.0,
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Country",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 1,
+            "sample_values": [
+                "United States",
+                "United States",
+                "United States",
+                "United States",
+                "United States"
+            ],
+            "semantic_type": "text",
+            "semantic_confidence": 1.0,
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "City",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 529,
+            "sample_values": [
+                "Henderson",
+                "Henderson",
+                "Los Angeles",
+                "Fort Lauderdale",
+                "Fort Lauderdale"
+            ],
+            "semantic_type": "text",
+            "semantic_confidence": 0.78,
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "State",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 49,
+            "sample_values": [
+                "Kentucky",
+                "Kentucky",
+                "California",
+                "Florida",
+                "Florida"
+            ],
+            "semantic_type": "text",
+            "semantic_confidence": 0.82,
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Postal Code",
+            "inferred_dtype": "integer",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 626,
+            "sample_values": [
+                42420.0,
+                42420.0,
+                90036.0,
+                33311.0,
+                33311.0
+            ],
+            "semantic_type": "integer",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        },
+        {
+            "column_name": "Region",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 4,
+            "sample_values": [
+                "South",
+                "South",
+                "West",
+                "South",
+                "South"
+            ],
+            "semantic_type": "varchar",
+            "semantic_confidence": 0.0,
+            "semantic_notes": "No semantic pattern matched (best: text 30%), using basic type",
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Product ID",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 1861,
+            "sample_values": [
+                "FUR-BO-10001798",
+                "FUR-CH-10000454",
+                "OFF-LA-10000240",
+                "FUR-TA-10000577",
+                "OFF-ST-10000760"
+            ],
+            "semantic_type": "varchar",
+            "semantic_confidence": 1.0,
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Category",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 3,
+            "sample_values": [
+                "Furniture",
+                "Furniture",
+                "Office Supplies",
+                "Furniture",
+                "Office Supplies"
+            ],
+            "semantic_type": "text",
+            "semantic_confidence": 1.0,
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Sub-Category",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 17,
+            "sample_values": [
+                "Bookcases",
+                "Chairs",
+                "Labels",
+                "Tables",
+                "Storage"
+            ],
+            "semantic_type": "text",
+            "semantic_confidence": 0.85,
+            "structural_type": "categorical"
+        },
+        {
+            "column_name": "Product Name",
+            "inferred_dtype": "text",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 1848,
+            "sample_values": [
+                "Bush Somerset Collection Bookcase",
+                "Hon Deluxe Fabric Upholstered Stacking Chairs, Rounded Back",
+                "Self-Adhesive Address Labels for Typewriters by Universal",
+                "Bretford CR4500 Series Slim Rectangular Table",
+                "Eldon Fold N Roll Cart System"
+            ],
+            "semantic_type": "varchar",
+            "semantic_confidence": 0.5,
+            "structural_type": "text"
+        },
+        {
+            "column_name": "Sales",
+            "inferred_dtype": "float",
+            "null_count": 0,
+            "null_percentage": 0.0,
+            "unique_count": 5393,
+            "sample_values": [
+                261.96,
+                731.94,
+                14.62,
+                957.58,
+                22.37
+            ],
+            "semantic_type": "float",
+            "semantic_confidence": 1.0,
+            "structural_type": "numeric"
+        }
+    ],
+    "dataset_level_flags": {
+        "has_missing_values": true,
+        "has_duplicates": false,
+        "has_mixed_types": false,
+        "has_potential_id_columns": true,
+        "potential_id_columns": [
+            "Row ID"
+        ]
+    },
+    "transformation_summary": {
+        "duplicates_removed": 0,
+        "columns_transformed": 14,
+        "columns_skipped": 4,
+        "columns_dropped": 0,
+        "transformed_column_list": [
+            "Row ID",
+            "Order Date",
+            "Ship Date",
+            "Customer Name",
+            "Segment",
+            "Country",
+            "City",
+            "State",
+            "Postal Code",
+            "Product ID",
+            "Category",
+            "Sub-Category",
+            "Product Name",
+            "Sales"
+        ],
+        "skipped_column_list": [
+            "Order ID",
+            "Ship Mode",
+            "Customer ID",
+            "Region"
+        ],
+        "dropped_column_list": [],
+        "transformation_date": "2026-05-12 15:35:06"
+    },
+    "row_processing_summary": {
+        "dropped_missing_rows": 0,
+        "original_row_count": 9800,
+        "duplicate_rows_removed": 0,
+        "final_row_count": 9800,
+        "processing_date": "2026-05-12 15:36:18"
+    },
+    "missing_values_summary": {
+        "total_missing_before": 11,
+        "total_missing_after": 0,
+        "columns_with_missing": {
+            "Postal Code": {
+                "missing_count": 11,
+                "missing_percentage": 0.11224489795918367,
+                "dtype": "float64",
+                "imputation_method": "group_median"
+            }
+        },
+        "tokens_normalized": 0,
+        "autogluon_validated": true
+    }
+}
